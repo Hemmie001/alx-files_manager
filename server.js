@@ -1,4 +1,3 @@
-
 import express from 'express';
 import router from './routes/index';
 
@@ -9,9 +8,8 @@ const app = express();
 app.use(express.json());
 app.use('/', router);
 
-app.listen(port, () => {
-  console.log(`server running on port ${port}`);
+app.listen(5000, () => {
+  console.log(`Server running on port 5000`);
 });
 
 export default app;
-
