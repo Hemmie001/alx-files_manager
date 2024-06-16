@@ -2,6 +2,8 @@
 
 const dbClient = require('../utils/db');
 const redisClient = require('../utils/redis');
+const crypto = require('crypto');
+const { ObjectId } = require('mongodb');
 
 class UsersController {
     static async postNew(req, res) {
