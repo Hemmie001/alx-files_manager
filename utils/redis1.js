@@ -6,7 +6,6 @@ const { promisify } = require('util');
 class RedisClient {
     constructor() {
         this.client = redis.createClient();
-        this.connected = false;
 
         this.client.on('error', (err) => {
             console.error('Redis client error:', err);
@@ -15,9 +14,6 @@ class RedisClient {
         this.client.on('connect', () => {
             console.log('Redis client connected');
             this.connected = true;
-            if (this.connectResolve) {
-                this.connectResolve();
-            }
         });
 
         this.client.on('end', () => {
@@ -25,32 +21,17 @@ class RedisClient {
             this.connected = false;
         });
 
+        this.connected = false;
         this.getAsync = promisify(this.client.get).bind(this.client);
         this.setAsync = promisify(this.client.set).bind(this.client);
         this.delAsync = promisify(this.client.del).bind(this.client);
-
-        this.connectPromise = new Promise((resolve) => {
-            if (this.connected) {
-                resolve();
-            } else {
-                this.connectResolve = resolve;
-            }
-        });
     }
 
-    async ensureConnected() {
-        if (!this.connected) {
-            await this.connectPromise;
-        }
-    }
-
-    async isAlive() {
-        await this.ensureConnected();
+    isAlive() {
         return this.connected;
     }
 
     async get(key) {
-        await this.ensureConnected();
         try {
             const value = await this.getAsync(key);
             return value;
@@ -61,7 +42,6 @@ class RedisClient {
     }
 
     async set(key, value, duration) {
-        await this.ensureConnected();
         try {
             await this.setAsync(key, value, 'EX', duration);
         } catch (err) {
@@ -70,7 +50,6 @@ class RedisClient {
     }
 
     async del(key) {
-        await this.ensureConnected();
         try {
             await this.delAsync(key);
         } catch (err) {
