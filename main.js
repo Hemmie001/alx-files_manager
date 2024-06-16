@@ -1,6 +1,8 @@
 import redisClient from './utils/redis';
 
 (async () => {
+    await redisClient.connectPromise;
+
     console.log(await redisClient.isAlive());
     console.log(await redisClient.get('myKey'));
     await redisClient.set('myKey', 12, 5);
