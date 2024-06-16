@@ -1,7 +1,7 @@
 // controllers/UsersController.js
 
-const crypto = require('crypto');
 const dbClient = require('../utils/db');
+const redisClient = require('../utils/redis');
 
 class UsersController {
     static async postNew(req, res) {
@@ -10,27 +10,42 @@ class UsersController {
         if (!email) {
             return res.status(400).json({ error: 'Missing email' });
         }
+
         if (!password) {
             return res.status(400).json({ error: 'Missing password' });
         }
 
         const usersCollection = await dbClient.getCollection('users');
+        const existingUser = await usersCollection.findOne({ email });
 
-        const userExists = await usersCollection.findOne({ email });
-        if (userExists) {
+        if (existingUser) {
             return res.status(400).json({ error: 'Already exist' });
         }
 
         const hashedPassword = crypto.createHash('sha1').update(password).digest('hex');
+        const newUser = await usersCollection.insertOne({ email, password: hashedPassword });
 
-        const newUser = {
-            email,
-            password: hashedPassword,
-        };
+        return res.status(201).json({ id: newUser.insertedId, email });
+    }
 
-        const result = await usersCollection.insertOne(newUser);
+    static async getMe(req, res) {
+        const token = req.headers['x-token'];
+        if (!token) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
 
-        return res.status(201).json({ id: result.insertedId, email: newUser.email });
+        const userId = await redisClient.get(`auth_${token}`);
+        if (!userId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const usersCollection = await dbClient.getCollection('users');
+        const user = await usersCollection.findOne({ _id: new ObjectId(userId) }, { projection: { email: 1 } });
+        if (!user) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        return res.status(200).json({ id: userId, email: user.email });
     }
 }
 
