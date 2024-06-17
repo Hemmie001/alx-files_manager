@@ -18,9 +18,10 @@ class FilesController {
   static async postUpload(req, res) {
     try {
       // Get the authorization token from the request headers
-      const token = req.headers.authorization?.split(' ')[1];
-
-      if (!token) {
+      let token;
+      if (req.headers.authorization) {
+        token = req.headers.authorization.split(' ')[1];
+      } else {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
@@ -49,8 +50,9 @@ class FilesController {
       }
 
       // Check if the parent folder exists
+      let parentFile;
       if (parentId !== '0') {
-        const parentFile = await File.findById(parentId);
+        parentFile = await File.findById(parentId);
 
         if (!parentFile) {
           return res.status(400).json({ error: 'Parent not found' });
