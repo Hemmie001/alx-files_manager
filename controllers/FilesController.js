@@ -6,7 +6,7 @@ const path = require('path');
 const { ObjectId } = require('mongodb');
 const dbClient = require('../utils/db');
 const redisClient = require('../utils/redis');
-const File = require('../utils/File'); // Updated path to File.js in utils
+const File = require('../utils/File.js'); // Added .js extension
 
 class FilesController {
   static async postUpload(req, res) {
