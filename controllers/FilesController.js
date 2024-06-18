@@ -1,11 +1,14 @@
 // controllers/FilesController.js
 
+const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const File = require('../models/File');
+const { ObjectId } = require('mongodb');
+const dbClient = require('../utils/db');
+const redisClient = require('../utils/redis');
+const User = require('../models/User'); // Ensure this path is correct
+const File = require('../models/File'); // Ensure this path is correct
 
 // File storage directory
 const UPLOAD_DIR = process.env.FOLDER_PATH || path.join(__dirname, '../uploads');
@@ -18,16 +21,15 @@ class FilesController {
   static async postUpload(req, res) {
     try {
       // Get the authorization token from the request headers
-      let token;
-      if (req.headers.authorization) {
-        token = req.headers.authorization.split(' ')[1];
-      } else {
+      const authHeader = req.headers.authorization;
+      if (!authHeader) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
+      const token = authHeader.split(' ')[1];
 
       // Verify and decode the token to get the user
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await User.findById(decoded.userId);
+      const user = await dbClient.getCollection('users').findOne({ _id: new ObjectId(decoded.userId) });
 
       if (!user) {
         return res.status(401).json({ error: 'Unauthorized' });
@@ -52,9 +54,9 @@ class FilesController {
       }
 
       // Check if the parent folder exists
-      let parentFile;
+      let parentFile = null;
       if (parentId !== '0') {
-        parentFile = await File.findById(parentId);
+        parentFile = await dbClient.getCollection('files').findOne({ _id: new ObjectId(parentId) });
 
         if (!parentFile) {
           return res.status(400).json({ error: 'Parent not found' });
@@ -68,17 +70,18 @@ class FilesController {
       // Process the file based on the type
       if (type === 'folder') {
         // Create a new folder in the database
-        const newFile = await File.create({
+        const newFile = await dbClient.getCollection('files').insertOne({
           name,
           type,
           parentId,
           isPublic,
-          user: user._id,
+          userId: user._id,
           createdAt: new Date(),
         });
 
-        return res.status(201).json(newFile);
+        return res.status(201).json(newFile.ops[0]);
       }
+
       // Generate a unique filename
       const filename = `${uuidv4()}-${name}`;
       const filePath = path.join(UPLOAD_DIR, filename);
@@ -94,13 +97,13 @@ class FilesController {
         parentId,
         isPublic,
         localPath: filePath,
-        user: user._id,
+        userId: user._id,
         createdAt: new Date(),
       };
 
-      const newFile = await File.create(fileRecord);
+      const newFile = await dbClient.getCollection('files').insertOne(fileRecord);
 
-      return res.status(201).json(newFile);
+      return res.status(201).json(newFile.ops[0]);
     } catch (error) {
       console.error('Error uploading file:', error);
       return res.status(500).json({ error: 'Error uploading file' });
