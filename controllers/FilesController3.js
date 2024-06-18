@@ -6,6 +6,7 @@ const path = require('path');
 const { ObjectId } = require('mongodb');
 const dbClient = require('../utils/db');
 const redisClient = require('../utils/redis');
+const User = require('../utils/User'); // Updated path to User.js in utils
 const File = require('../utils/File'); // Updated path to File.js in utils
 
 class FilesController {
@@ -47,10 +48,7 @@ class FilesController {
       }
     }
 
-    const user = await dbClient.getCollection('users').findOne(
-      { _id: new ObjectId(userId) },
-      { projection: { email: 1 } },
-    );
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
