@@ -6,7 +6,7 @@ const path = require('path');
 const { ObjectId } = require('mongodb');
 const dbClient = require('../utils/db');
 const redisClient = require('../utils/redis');
-const File = require('../utils/File.js'); // Added .js extension
+const File = require('../utils/File'); // Removed the file extension
 
 class FilesController {
   static async postUpload(req, res) {
@@ -47,10 +47,7 @@ class FilesController {
       }
     }
 
-    const user = await dbClient.getCollection('users').findOne(
-      { _id: new ObjectId(userId) },
-      { projection: { email: 1 } },
-    );
+    const user = await dbClient.getCollection('users').findOne({ _id: new ObjectId(userId) });
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -64,8 +61,8 @@ class FilesController {
     };
 
     if (type === 'folder') {
-      const result = await File.create(newFile);
-      return res.status(201).json(result.ops[0]);
+      await File.create(newFile);
+      return res.status(201).json(newFile);
     }
 
     const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';

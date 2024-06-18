@@ -1,15 +1,18 @@
-const { MongoClient, ObjectId } = require('mongodb');
+// utils/File.js
+
+const { ObjectId } = require('mongodb');
 const dbClient = require('./db');
 
 class File {
   static async findById(id) {
-    const db = dbClient.db();
-    return db.collection('files').findOne({ _id: new ObjectId(id) });
+    if (!ObjectId.isValid(id)) {
+      return null;
+    }
+    return dbClient.getCollection('files').findOne({ _id: new ObjectId(id) });
   }
 
-  static async create(file) {
-    const db = dbClient.db();
-    const result = await db.collection('files').insertOne(file);
+  static async create(fileData) {
+    const result = await dbClient.getCollection('files').insertOne(fileData);
     return result;
   }
 }
