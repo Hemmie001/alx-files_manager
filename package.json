@@ -18,6 +18,7 @@
     "chai-http": "^4.3.0",
     "express": "^4.19.2",
     "image-thumbnail": "^1.0.10",
+    "jsonwebtoken": "^9.0.2",
     "mime-types": "^2.1.27",
     "mongodb": "^3.5.9",
     "redis": "^2.8.0",
