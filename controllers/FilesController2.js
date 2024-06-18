@@ -34,22 +34,7 @@ class FilesController {
     }
 
     if (type !== 'folder' && !data) {
-      return res.status(400).json({ error: 'Missing data' });
-    }
-
-    let parentFile = null;
-    if (parentId !== 0) {
-      parentFile = await File.findById(parentId);
-      if (!parentFile) {
-        return res.status(400).json({ error: 'Parent not found' });
-      }
-      if (parentFile.type !== 'folder') {
-        return res.status(400).json({ error: 'Parent is not a folder' });
-      }
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
+      return res.st
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -62,8 +47,8 @@ class FilesController {
     };
 
     if (type === 'folder') {
-      const result = await File.create(newFile);
-      return res.status(201).json(result.ops[0]);
+      await dbClient.getCollection('files').insertOne(newFile);
+      return res.status(201).json(newFile);
     }
 
     const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
@@ -77,8 +62,8 @@ class FilesController {
 
     newFile.localPath = localPath;
 
-    const result = await File.create(newFile);
-    return res.status(201).json(result.ops[0]);
+    await dbClient.getCollection('files').insertOne(newFile);
+    return res.status(201).json(newFile);
   }
 }
 
