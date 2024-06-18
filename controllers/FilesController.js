@@ -34,7 +34,9 @@ class FilesController {
       }
 
       // Get the file data from the request body
-      const { name, type, parentId = '0', isPublic = false, data } = req.body;
+      const {
+        name, type, parentId = '0', isPublic = false, data,
+      } = req.body;
 
       // Validate the file data
       if (!name) {
@@ -76,30 +78,29 @@ class FilesController {
         });
 
         return res.status(201).json(newFile);
-      } else {
-        // Generate a unique filename
-        const filename = `${uuidv4()}-${name}`;
-        const filePath = path.join(UPLOAD_DIR, filename);
-
-        // Save the file on disk
-        const fileContent = Buffer.from(data, 'base64');
-        await fs.promises.writeFile(filePath, fileContent);
-
-        // Create the file record in the database
-        const fileRecord = {
-          name,
-          type,
-          parentId,
-          isPublic,
-          localPath: filePath,
-          user: user._id,
-          createdAt: new Date(),
-        };
-
-        const newFile = await File.create(fileRecord);
-
-        return res.status(201).json(newFile);
       }
+      // Generate a unique filename
+      const filename = `${uuidv4()}-${name}`;
+      const filePath = path.join(UPLOAD_DIR, filename);
+
+      // Save the file on disk
+      const fileContent = Buffer.from(data, 'base64');
+      await fs.promises.writeFile(filePath, fileContent);
+
+      // Create the file record in the database
+      const fileRecord = {
+        name,
+        type,
+        parentId,
+        isPublic,
+        localPath: filePath,
+        user: user._id,
+        createdAt: new Date(),
+      };
+
+      const newFile = await File.create(fileRecord);
+
+      return res.status(201).json(newFile);
     } catch (error) {
       console.error('Error uploading file:', error);
       return res.status(500).json({ error: 'Error uploading file' });
