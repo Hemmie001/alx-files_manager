@@ -1,4 +1,4 @@
-/ routes/index.js
+// routes/index.js
 
 const express = require('express');
 
@@ -28,11 +28,5 @@ router.get('/users/me', UsersController.getMe);
 
 // POST /files => FilesController.postUpload
 router.post('/files', FilesController.postUpload);
-
-// GET /files/:id => FilesController.getShow
-router.get('/files/:id', FilesController.getShow);
-
-// GET /files => FilesController.getIndex
-router.get('/files', FilesController.getIndex);
 
 module.exports = router;
