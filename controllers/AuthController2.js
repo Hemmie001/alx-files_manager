@@ -16,8 +16,6 @@ class AuthController {
     const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
     const [email, password] = credentials.split(':');
 
-    console.log(`Email: ${email}, Password: ${password}`);
-
     if (!email || !password) {
       return res.status(401).json({ error: 'Unauthorized' });
     }

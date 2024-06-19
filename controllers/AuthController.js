@@ -22,6 +22,11 @@ class AuthController {
 
     const hashedPassword = crypto.createHash('sha1').update(password).digest('hex');
     const usersCollection = await dbClient.getCollection('users');
+    
+    console.log('Email:', email); // Debugging output
+    console.log('Password:', password); // Debugging output
+    console.log('Hashed Password:', hashedPassword); // Debugging output
+
     const user = await usersCollection.findOne({ email, password: hashedPassword });
 
     if (!user) {
