@@ -4,7 +4,7 @@ const { ObjectId } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
 const dbClient = require('../utils/db');
 const redisClient = require('../utils/redis');
-const User = require('../models/User.js');
+//const User = require('../models/User.js');
 const File = require('../models/File.js');
 
 class FilesController {
