@@ -9,7 +9,7 @@ const redisClient = require('../utils/redis');
 
 class FilesController {
   static async postUpload(req, res) {
-    const token = req.headers.authorization || req.headers['x-token'];
+    const token = req.headers.authorization;
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -139,9 +139,6 @@ class FilesController {
 
     return res.status(200).json(files);
   }
-} catch (err) {
-  // Handle the error here
-  return res.status(500).json({ error: 'Internal Server Error' });
 }
 
 module.exports = FilesController;
