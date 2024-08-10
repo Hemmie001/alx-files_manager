@@ -139,6 +139,9 @@ class FilesController {
 
     return res.status(200).json(files);
   }
+} catch (err) {
+  // Handle the error here
+  return res.status(500).json({ error: 'Internal Server Error' });
 }
 
 module.exports = FilesController;
