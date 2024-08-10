@@ -9,7 +9,7 @@ const redisClient = require('../utils/redis');
 
 class FilesController {
   static async postUpload(req, res) {
-    const token = req.headers.authorization;
+    const token = req.headers.authorization || req.headers['x-token'];
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
