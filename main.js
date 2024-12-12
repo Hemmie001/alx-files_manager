@@ -1,13 +1,32 @@
-import redisClient from './utils/redis';
+import dbClient from './utils/db';
 
-redisClient.client.on('ready', async () => {
-    console.log(redisClient.isAlive()); // Should now return true
-    console.log(await redisClient.get('myKey')); // Initially null
-    await redisClient.set('myKey', 12, 5); // Set key with expiration
-    console.log(await redisClient.get('myKey')); // 12
+const waitConnection = () => {
+    return new Promise((resolve, reject) => {
+        let i = 0;
+        const repeatFct = async () => {
+            await new Promise(r => setTimeout(r, 1000)); // Properly await a promise
+            i += 1;
+            if (i >= 10) {
+                reject(new Error("Failed to connect to DB after 10 attempts")); // Provide a rejection reason
+            } else if (!dbClient.isAlive()) {
+                console.log(`Attempt ${i}: Database not alive, retrying...`);
+                repeatFct();
+            } else {
+                resolve();
+            }
+        };
+        repeatFct();
+    });
+};
 
-    setTimeout(async () => {
-        console.log(await redisClient.get('myKey')); // null after 10 seconds
-    }, 1000 * 10);
-});
-
+(async () => {
+    console.log("Initial DB alive status:", dbClient.isAlive());
+    try {
+        await waitConnection();
+        console.log("Final DB alive status:", dbClient.isAlive());
+        console.log("Number of users:", await dbClient.nbUsers());
+        console.log("Number of files:", await dbClient.nbFiles());
+    } catch (error) {
+        console.error("Error:", error.message); // Handle connection error
+    }
+})();
