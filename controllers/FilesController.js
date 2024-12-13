@@ -4,13 +4,12 @@ const { ObjectId } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
 const dbClient = require('../utils/db');
 const redisClient = require('../utils/redis');
-// const User = require('../models/User.js');
-// const File = require('../models/File.js');
+//const User = require('../models/User.js');
+//const File = require('../models/File.js');
 
 class FilesController {
   static async postUpload(req, res) {
-    // Change to expect token from X-Token header
-    const token = req.headers['x-token'];
+    const token = req.headers.authorization;
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -83,9 +82,8 @@ class FilesController {
     });
   }
 
-  // The getShow and getIndex methods should also be updated similarly
   static async getShow(req, res) {
-    const token = req.headers['x-token']; // Expect token from X-Token header
+    const token = req.headers.authorization;
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -110,7 +108,7 @@ class FilesController {
   }
 
   static async getIndex(req, res) {
-    const token = req.headers['x-token']; // Expect token from X-Token header
+    const token = req.headers.authorization;
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
